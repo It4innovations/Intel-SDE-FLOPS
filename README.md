@@ -64,10 +64,10 @@ By default, Intel SDE (`sde64`) defaults to the processor on which it is execute
     -knl  Set chip-check and CPUID for Intel(R) Knights landing CPU
     -knm  Set chip-check and CPUID for Intel(R) Knights mill CPU
 
-E.g., to emulate a Cannonlake CPU invoke Intel SDE like this:\
+E.g., to emulate a Cannonlake CPU, invoke Intel SDE like this:\
 `$ sde64 -cnl -iform -mix -dyn_mask_profile -- app`
 
-## FLOPs of an Selected Sections
+## FLOPs of Selected Sections
 To restrict the FLOPs counting to specific sections within an application place the following markers in the source code:
 * `__SSC_MARK(0xFACE);`\
   Start/resume collecting FLOPs past this line.
