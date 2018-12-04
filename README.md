@@ -9,10 +9,12 @@ This project hosts a Python script to compute the number of Floating Point OPera
 * Separation of single and double precision FLOPs
 * Listing FLOPs by threads
 * Awareness of masking instructions (AVX512)
+* The script works for both Python 2.x and 3.x
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.\
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.16.0-2018-01-30-lin.tar.bz2`](https://software.intel.com/protected-download/267266/144917)). Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.16.0-2018-01-30-lin.tar.bz2`](https://software.intel.com/protected-download/267266/144917)).\
+Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
 Execute `app` within Intel SDE using the following invocation:\
@@ -22,7 +24,7 @@ To calculate the FLOPs of the application, execute the script within the same wo
 `$ intel_sde_flops.py`
 It uses both files created by Intel SDE and show the FLOPs separated by single/double precision and application thread IDs (TID).\
 \
-**Example**:\
+**Example**:
     
     $ sde64 -iform -mix -dyn_mask_profile -- ./app
     <output of app>
@@ -77,7 +79,7 @@ Recompile the application and execute it with Intel SDE like this:\
 Again, it will leave two files in the current working directory (`sde-mix-out.txt` and `sde-dyn-mask-profile.txt`). Execute the Python script in the same working directory to extract the number of FLOPs executed within the section(s):\
 `$ intel_sde_flops.py`\
 \
-**Example**:\
+**Example**:
 
     $ cat app.c
     ...
