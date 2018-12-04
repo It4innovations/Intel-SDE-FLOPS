@@ -23,9 +23,24 @@ To calculate the FLOPs of the application, execute the script within the same wo
 It uses both files created by Intel SDE and show the FLOPs separated by single/double precision and application thread IDs (TID).\
 \
 **Example**:\
-`$ sde64 -iform -mix -dyn_mask_profile -- ./app`\
-`$ intel_sde_flops.py`\
-`TODO`
+    
+    $ sde64 -iform -mix -dyn_mask_profile -- ./app
+    <output of app>
+    $ intel_sde_flops.py
+    TID: 0 (OS-TID: 19116):
+        Unmasked single prec. FLOPs: 0
+        Masked single prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 184384663
+        Masked double prec. FLOPs: 20800
+    TID: 1 (OS-TID: 19122):
+        Unmasked single prec. FLOPs: 0
+        Masked single prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 92160103
+        Masked double prec. FLOPs: 0
+    =============================================
+    Sum:
+        Single prec. FLOPs: 0
+        Double prec. FLOPs: 276565566
 
 **Note**:\
 By default, Intel SDE (`sde64`) defaults to the processor on which it is executed. It is also possible to emulate another/newer processors (instruction sets) by the following options (see `sde64 --help`):
@@ -63,14 +78,29 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
 `$ intel_sde_flops.py`\
 \
 **Example**:\
-`$ cat app.c`\
-`...`\
-`__SSC_MARK(0xFACE);`\
-`for(int i = 0; i < N; ++i) {`\
-`...`\
-`__SSC_MARK(0xDEAD);`\
-`...`\
-`$ gcc app.c -o app`\
-`$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app`\
-`$ intel_sde_flops.py`\
-`TODO`
+
+    $ cat app.c
+    ...
+    __SSC_MARK(0xFACE);
+    for(int i = 0; i < N; ++i) {
+    ...
+    __SSC_MARK(0xDEAD);
+    ...
+    $ gcc app.c -o app
+    $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app
+    <output of app>
+    $ intel_sde_flops.py
+    TID: 0 (OS-TID: 19116):
+        Unmasked single prec. FLOPs: 0
+        Masked single prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 184384663
+        Masked double prec. FLOPs: 20800
+    TID: 1 (OS-TID: 19122):
+        Unmasked single prec. FLOPs: 0
+        Masked single prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 92160103
+        Masked double prec. FLOPs: 0
+    =============================================
+    Sum:
+        Single prec. FLOPs: 0
+        Double prec. FLOPs: 276565566
