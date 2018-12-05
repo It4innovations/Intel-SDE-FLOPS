@@ -12,7 +12,7 @@ In addition, add the following markers to your code to select the sections for w
 - __SSC_MARK(0xFACE) // Starts/resumes profiling
 - __SSC_MARK(0xDEAD) // Ends/pauses profiling
 
-Author: Georg Zitzlsberger (georg.zitzlsberger@vsb.cz)
+Author: Georg Zitzlsberger (georg.zitzlsberger<ad>vsb.cz)
 
 Copyright (C) 2017-2018 Georg Zitzlsberger, IT4Innovations, VSB-Technical University of Ostrava, Czech Republic
 
