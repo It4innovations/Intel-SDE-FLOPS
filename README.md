@@ -117,3 +117,9 @@ In the example, one loop of the application `app` was annotated with the start/s
 \
 **Note**:\
 The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.
+
+# Acknowledgement
+This work was supported by The Ministry of Education, Youth and Sports from the Large Infrastructures for Research, Experimental Development and Innovations project ”IT4Innovations National Supercomputing Center – LM2015070”.
+
+# License
+This project is made available under the GNU General Public License, version 3 (GPLv3).
