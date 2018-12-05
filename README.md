@@ -21,14 +21,15 @@ Execute `app` within Intel SDE using the following invocation:\
 `$ sde64 -iform -mix -dyn_mask_profile -- ./app`\
 This creates two files `sde-mix-out.txt` and `sde-dyn-mask-profile.txt` in the working directory. The former contains information about the type and number of instructions executed. The latter provides information about whether elements on SIMD vectors have been masked (only for AVX512).\
 To calculate the FLOPs of the application, execute the script within the same working directory:\
-`$ intel_sde_flops.py`
-It uses both files created by Intel SDE and show the FLOPs separated by single/double precision and application thread IDs (TID).\
+`$ python intel_sde_flops.py`\
+\
+It uses both files created by Intel SDE and shows the FLOPs separated by single/double precision, for all application thread IDs (TID), and summarized over all threads.\
 \
 **Example**:
     
     $ sde64 -iform -mix -dyn_mask_profile -- ./app
     <output of app>
-    $ intel_sde_flops.py
+    $ python intel_sde_flops.py
     TID: 0 (OS-TID: 19116):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
@@ -43,7 +44,11 @@ It uses both files created by Intel SDE and show the FLOPs separated by single/d
     Sum:
         Single prec. FLOPs: 0
         Double prec. FLOPs: 276565566
-
+        
+In the example, the application `app` only used instructions operating on double precision floating point values. Thread 0 executed 184384663 FLOPs which were unmasked, i.e. the operations (instructions) were either using scalars or the entire length of SIMD vectors/registers. Furthermore, 20800 FLOPs were computed using masked operations, which are operations on SIMD registers selecting only a subset of elements to which an individual operation is applied. Since only AVX512 has masked instructions<sup>1</sup> so far, we can also conclude that `app` was compiled for one of the AVX512 flavors. Thread 1 only executed unmasked 92160103 FLOPs. The sum of all double precision FLOPs is shown at the end of the output (276565566).\
+\
+<sup>1</sup>: The Many Integrated Core (MIC) Architecture was the first Intel Architecture with masked instructions. However, Intel SDE cannot emulate MIC applications.\
+\
 **Note**:\
 By default, Intel SDE (`sde64`) defaults to the processor on which it is executed. It is also possible to emulate another/newer processors (instruction sets) by the following options (see `sde64 --help`):
 
@@ -77,7 +82,7 @@ To restrict the FLOPs counting to specific sections within an application place 
 Recompile the application and execute it with Intel SDE like this:\
 `$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app`\
 Again, it will leave two files in the current working directory (`sde-mix-out.txt` and `sde-dyn-mask-profile.txt`). Execute the Python script in the same working directory to extract the number of FLOPs executed within the section(s):\
-`$ intel_sde_flops.py`\
+`$ python intel_sde_flops.py`\
 \
 **Example**:
 
@@ -85,13 +90,14 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
     ...
     __SSC_MARK(0xFACE);
     for(int i = 0; i < N; ++i) {
-    ...
+        ...
+    }
     __SSC_MARK(0xDEAD);
     ...
     $ gcc app.c -o app
     $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app
     <output of app>
-    $ intel_sde_flops.py
+    $ python intel_sde_flops.py
     TID: 0 (OS-TID: 19116):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
@@ -106,3 +112,8 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
     Sum:
         Single prec. FLOPs: 0
         Double prec. FLOPs: 276565566
+
+In the example, one loop of the application `app` was annotated with the start/stop markers. Hence only FLOPs executed within the loop are measured.\
+\
+**Note**:\
+The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.
