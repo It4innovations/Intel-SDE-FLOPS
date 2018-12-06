@@ -18,9 +18,12 @@ Intel SDE is the executable `sde64` found in the top level directory within the 
 
 ## FLOPs of the Entire Application
 Execute `app` within Intel SDE using the following invocation:\
+\
 `$ sde64 -iform -mix -dyn_mask_profile -- ./app`\
+\
 This creates two files `sde-mix-out.txt` and `sde-dyn-mask-profile.txt` in the working directory. The former contains information about the type and number of instructions executed. The latter provides information about whether elements on SIMD vectors have been masked (only for AVX512).\
 To calculate the FLOPs of the application, execute the script within the same working directory:\
+\
 `$ python intel_sde_flops.py`\
 \
 It uses both files created by Intel SDE and shows the FLOPs separated by single/double precision, for all application thread IDs (TID), and summarized over all threads.\
@@ -70,6 +73,7 @@ By default, Intel SDE (`sde64`) defaults to the processor on which it is execute
     -knm  Set chip-check and CPUID for Intel(R) Knights mill CPU
 
 E.g., to emulate a Cannonlake CPU, invoke Intel SDE like this:\
+\
 `$ sde64 -cnl -iform -mix -dyn_mask_profile -- app`
 
 ## FLOPs of Selected Sections
@@ -88,8 +92,11 @@ The markers are defined as **internal intrinsics by the Intel C++ Compiler**. If
     #endif
 
 Recompile the application and execute it with Intel SDE like this:\
+\
 `$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app`\
+\
 Again, it will leave two files in the current working directory (`sde-mix-out.txt` and `sde-dyn-mask-profile.txt`). Execute the Python script in the same working directory to extract the number of FLOPs executed within the section(s):\
+\
 `$ python intel_sde_flops.py`\
 \
 **Example**:
