@@ -133,6 +133,31 @@ In the example, one loop of the application `app` was annotated with the start/s
 **Note**:\
 The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.
 
+# Caveats
+When using Intel SDE for counting the FLOPs, be aware of the following pecularities when using the results:
+
+1. **What is considered a floating point operation (FLOP)?**\
+  Intel SDE is working on an instruction level. It hence regards an instruction, which operates on one floating point value, as a single FLOP (with the exception of FMAs -- see below). FLOPs are computations of different kinds but no memory stores or loads.\
+  Computations are defined by the instructions of the underlying architecture, with the most common ones being addition, subtraction, multiplication and division. There are also instructions for computing the reciprocal, reciprocal square root, exponential, etc. There's a limited amount of possible operations given by the instruction set of the processor's micro-architecture.\
+  Higher level operations as expressed in high level languages like C/C++ or Fortran are mapped by compilers to individual or a set of instructions. This results in two problems:
+    1. **Simple high level operations are more complex than they seem:**\
+    Let's consider a division expressed in C++, like so: `c = a/b;`\
+    This actually ends up being two instructions for the Intel architectures carried out by compiler optimizations:\
+    `b` is turned into the reciprocal first, which is then multiplied with `a`.\
+    The reason behind this is not the lack of a dedicated division instruction -- it naively could have been compiled that way. The division, however, is a complex instruction which can take tenth of cycles to compute (e.g. see throughput of an [AVX division using double precision floating point](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=div&expand=2129,2126,2126) in the Intel Intrinsics Guide). Computing the [reciprocal](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=rcp&expand=2129,2126,2126,4450,2161,4450) and a [multiplication](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=mult&expand=2129,2126,2126,4450,2161) to "emulate" the division is faster (approx. 4 vs. 10 cycles for Skylake).\
+    Effects like this are caused by compiler optimizations. They are desired and make applications more efficient, but substitute even simple operations by multiple instructions.
+    2. **Complex high level operations have no instruction counterpart:**\
+    More common than i. are high level operations to which no single instruction in the processor micro-architecture exists. Examples are the exponent operation (e.g. for AVX<sup>2</sup>), or simple arithmetic on complex numbers. For the latter, the compiler would separate real and imaginary to apply individual instructions onto. For the former, implementations from math libraries are used (e.g. libm, Intel's svml, GCC's libmvec, etc.). See 3. below for more information on numerical libaries.\
+    As a result, those implementations yield to additional instructions being executed to perform a single high level operation.
+       
+2. **How are contracted instructions (so-called FMA) handled?**\
+   TODO
+   
+3. **Numerical libraries can skew your results.**\
+   TODO
+
+<sup>2</sup> An *exponent* instruction does not exist for SIMD extensions other than AVX512ER. Which could have side-effects when migrating from AVX to AVX512/AVX512ER.
+
 # Acknowledgement
 This work was supported by The Ministry of Education, Youth and Sports from the Large Infrastructures for Research, Experimental Development and Innovations project ”IT4Innovations National Supercomputing Center – LM2015070”.
 
