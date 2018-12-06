@@ -78,7 +78,15 @@ To restrict the FLOPs counting to specific sections within an application place 
   Start/resume collecting FLOPs past this line.
 * `__SSC_MARK(0xDEAD);`\
   Stop/pause collecting FLOPs.
-  
+
+The markers are defined as **internal intrinsics by the Intel C++ Compiler**. If you use GCC, LLVM/Clang, or other C/C++ compilers, add the following preprocessor makro at the beginning of your source files to add support for the markers:
+
+    #ifndef __SSC_MARK
+    #define __SSC_MARK(tag)                                                        \
+            __asm__ __volatile__("movl %0, %%ebx; .byte 0x64, 0x67, 0x90 "         \
+                                 ::"i"(tag) : "%ebx")
+    #endif
+
 Recompile the application and execute it with Intel SDE like this:\
 `$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app`\
 Again, it will leave two files in the current working directory (`sde-mix-out.txt` and `sde-dyn-mask-profile.txt`). Execute the Python script in the same working directory to extract the number of FLOPs executed within the section(s):\
