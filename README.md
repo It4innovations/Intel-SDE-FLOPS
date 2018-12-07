@@ -33,22 +33,29 @@ It uses both files created by Intel SDE and shows the FLOPs separated by single/
     $ sde64 -iform -mix -dyn_mask_profile -- ./app
     <output of app>
     $ python intel_sde_flops.py
-    TID: 0 (OS-TID: 19116):
+    TID: 0 (OS-TID: 28764):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
-        Unmasked double prec. FLOPs: 184384663
-        Masked double prec. FLOPs: 20800
-    TID: 1 (OS-TID: 19122):
+        Unmasked double prec. FLOPs: 102453126
+        Masked double prec. FLOPs: 81940800
+        Instructions executed: 75126024
+        FMA instructions executed: 10242600
+    TID: 1 (OS-TID: 28770):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
-        Unmasked double prec. FLOPs: 92160103
-        Masked double prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 51200065
+        Masked double prec. FLOPs: 40960000
+        Instructions executed: 37448333
+        FMA instructions executed: 5120000
     =============================================
     Sum:
         Single prec. FLOPs: 0
-        Double prec. FLOPs: 276565566
+        Double prec. FLOPs: 276553991
+        Total instructions executed: 112574357
+        Total FMA instructions executed: 15362600
         
-In the example, the application `app` only used instructions operating on double precision floating point values. Thread 0 executed 184384663 FLOPs which were unmasked, i.e. the operations (instructions) were either using scalars or the entire length of SIMD vectors/registers. Furthermore, 20800 FLOPs were computed using masked operations, which are operations on SIMD registers selecting only a subset of elements to which an individual operation is applied. Since only AVX512 has masked instructions<sup>1</sup> so far, we can also conclude that `app` was compiled for one of the AVX512 flavors. Thread 1 only executed unmasked 92160103 FLOPs. The sum of all double precision FLOPs is shown at the end of the output (276565566).\
+In the example, the application `app` only used instructions operating on double precision floating point values. Thread 0 executed 102453126 double precision FLOPs which were unmasked, i.e. the operations (instructions) were either using scalars or the entire length of SIMD vectors/registers. Furthermore, 81940800 double precision FLOPs were computed using masked operations, which are operations on SIMD registers selecting only a subset of elements to which an individual operation is applied. Since only AVX512 has masked instructions<sup>1</sup> so far, we can also conclude that `app` was compiled for one of the AVX512 flavors. Thread 1 only executed unmasked 51200065 double precision FLOPs. The sum of all double precision FLOPs is shown at the end of the output (276553991).\
+It furthermore shows the number of overall instructions executed by thread (e.g. 75126024 for thread 0) or entirely over all threads (112574357). Also the number of explicit FMA instructions are shown the same way (e.g. 10242600 for thread 0). Note that this is only the count of the FMA instructions and not how many individual operations have been carried out. Those vary depending on how many elements are on a vector processed by an FMA instruction or whether masking was used.\
 \
 <sup>1</sup>: The Many Integrated Core (MIC) Architecture was the first Intel Architecture with masked instructions. However, Intel SDE cannot emulate MIC applications.\
 \
@@ -113,20 +120,26 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
     $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./app
     <output of app>
     $ python intel_sde_flops.py
-    TID: 0 (OS-TID: 19116):
+    TID: 0 (OS-TID: 28190):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
-        Unmasked double prec. FLOPs: 184384663
-        Masked double prec. FLOPs: 20800
-    TID: 1 (OS-TID: 19122):
+        Unmasked double prec. FLOPs: 102400000
+        Masked double prec. FLOPs: 81920000
+        Instructions executed: 69380000
+        FMA instructions executed: 10240000
+    TID: 1 (OS-TID: 28197):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
-        Unmasked double prec. FLOPs: 92160103
-        Masked double prec. FLOPs: 0
+        Unmasked double prec. FLOPs: 51200000
+        Masked double prec. FLOPs: 40960000
+        Instructions executed: 34690000
+        FMA instructions executed: 5120000
     =============================================
     Sum:
         Single prec. FLOPs: 0
-        Double prec. FLOPs: 276565566
+        Double prec. FLOPs: 276480000
+        Total instructions executed: 104070000
+        Total FMA instructions executed: 15360000
 
 In the example, one loop of the application `app` was annotated with the start/stop markers. Hence only FLOPs executed within the loop are measured.\
 \
