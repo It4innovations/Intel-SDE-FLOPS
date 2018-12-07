@@ -151,7 +151,9 @@ When using Intel SDE for counting the FLOPs, be aware of the following pecularit
     As a result, those implementations yield to additional instructions being executed to perform a single high level operation.
        
 2. **How are contracted instructions (so-called FMA) handled?**\
-   TODO
+   Contracted instructions combine multiple (high level) operations in one. Most common examples are fused multiply add (FMA) instructions which multiply two operands and add another one. Also a fused multiply subtract (FMS) exists, which subtracts instead of adding an operand. They are also referred to as "FMA", exploiting the fact that an FMS is a FMA with toggled sign bit of the operand.\
+   Those instructions need special care as simply counting the instruction execution is not enough. Intel SDE offers different ways to extract information about usage of such contracted instructions. Our script is aware about that and properly counts them as two FLOPs.\
+   Despite the proper detection and counting of FMAs, there is a side-effect when porting an application from an architecture without FMA support (e.g. AVX) to one which supports it (e.g. AVX2). As FMAs combine two operations in one instruction, the number of total instructions exectuted by an application is expected to be lower compared to an architecture without FMA capabilities. This can be used to study the effects (and potential) of FMAs to the application of interest. The more the overal executed instructions are reduced the more the application might benefit from FMAs. For this, two compilations of an application are needed. One with the FMA instruction set and one without FMA. For the latter one could still use the instruction set from the former compilation but tell the compiler to not create FMA instructions. Options would be `-mno-fma` (GCC or LLVM/Clang), or `-no-fma` (Intel).
    
 3. **Numerical libraries can skew your results.**\
    TODO
