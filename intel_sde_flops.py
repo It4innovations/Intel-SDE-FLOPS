@@ -1,20 +1,24 @@
 #!/usr/bin/env python
 """
-This script computes FLOPs executed by any application using the Intel Software Development Emulator (Intel SDE).
+This script computes FLOPs executed by any application using the Intel Software
+Development Emulator (Intel SDE).
 
 Example:
-  $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- <your_app>
+  $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat
+          -stop_ssc_mark DEAD:repeat -- <your_app>
   <output of your_app>
   $ python intel_sde_flops.py
   <output of FLOPs information>
 
-In addition, add the following markers to your code to select the sections for which to count the FLOPs:
+In addition, add the following markers to your code to select the sections for
+which to count the FLOPs:
 - __SSC_MARK(0xFACE) // Starts/resumes profiling
 - __SSC_MARK(0xDEAD) // Ends/pauses profiling
 
 Author: Georg Zitzlsberger (georg.zitzlsberger<ad>vsb.cz)
 
-Copyright (C) 2017-2018 Georg Zitzlsberger, IT4Innovations, VSB-Technical University of Ostrava, Czech Republic
+Copyright (C) 2017-2018 Georg Zitzlsberger, IT4Innovations,
+                        VSB-Technical University of Ostrava, Czech Republic
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -96,6 +100,7 @@ def flops_unmasked(mix_file):
                  instruction_group_count[mobj.group(1)] = eval(mobj.group(2))
 
         # Compute FLOPs below...
+        total_fmas = 0
         total_single_fp = 0
         total_double_fp = 0
 
@@ -108,6 +113,12 @@ def flops_unmasked(mix_file):
             key = '*elements_fp_single_' + str(cnt)
             if key in instruction_group_count:
                 total_single_fp += instruction_group_count[key] * cnt
+
+        # Get total executed instructions...
+        total_inst = 0
+        key = '*total'
+        if key in instruction_group_count:
+            total_inst = instruction_group_count[key]
 
         # FMAs
         # Note: AVX512 FMAs are all only masked versions which will be taken
@@ -154,6 +165,7 @@ def flops_unmasked(mix_file):
         for cnt in fma_double_xmm:
             if cnt in instruction_group_count:
                 total_double_fp += instruction_group_count[cnt] * 2
+                total_fmas += instruction_group_count[cnt]
 
         fma_double_ymm = [
             'VFMADD132PD_YMMqq_YMMqq_MEMqq',
@@ -196,6 +208,7 @@ def flops_unmasked(mix_file):
         for cnt in fma_double_ymm:
             if cnt in instruction_group_count:
                 total_double_fp += instruction_group_count[cnt] * 4
+                total_fmas += instruction_group_count[cnt]
 
         fma_double_scalar = [
             'VFMADD132SD_XMMdq_XMMq_MEMq',
@@ -226,6 +239,7 @@ def flops_unmasked(mix_file):
         for cnt in fma_double_scalar:
             if cnt in instruction_group_count:
                 total_double_fp += instruction_group_count[cnt]
+                total_fmas += instruction_group_count[cnt]
 
         fma_single_xmm = [
             'VFMADD132PS_XMMdq_XMMdq_MEMdq',
@@ -268,6 +282,7 @@ def flops_unmasked(mix_file):
         for cnt in fma_single_xmm:
             if cnt in instruction_group_count:
                 total_single_fp += instruction_group_count[cnt] * 4
+                total_fmas += instruction_group_count[cnt]
 
         fma_single_ymm = [
             'VFMADD132PS_YMMqq_YMMqq_MEMqq',
@@ -310,6 +325,7 @@ def flops_unmasked(mix_file):
         for cnt in fma_single_ymm:
             if cnt in instruction_group_count:
                 total_single_fp += instruction_group_count[cnt] * 8
+                total_fmas += instruction_group_count[cnt]
 
         fma_single_scalar = [
             'VFMADD132SS_XMMdq_XMMd_MEMd',
@@ -340,7 +356,9 @@ def flops_unmasked(mix_file):
         for cnt in fma_single_scalar:
             if cnt in instruction_group_count:
                 total_single_fp += instruction_group_count[cnt]
-        result.append([tid, os_tid, total_single_fp, total_double_fp])
+                total_fmas += instruction_group_count[cnt]
+
+        result.append([tid, os_tid, total_single_fp, total_double_fp, total_inst, total_fmas])
     # end while
     return result
 
@@ -411,6 +429,7 @@ def flops_masked(dyn_file):
                 exit(1)
 
         # Compute masked FLOPs below...
+        total_fmas = 0
         total_single_fp = 0
         total_double_fp = 0
 
@@ -463,6 +482,14 @@ def flops_masked(dyn_file):
                         if mobjj:
                             comp_count = int(mobjj.group(1))
                             break
+                    # For each found, get execution count
+                    exec_count = 0
+                    for j in range(idet_start, idet_end):
+                        mobjj = re.match(r'\s+<execution-counts>\s+([0-9]+)\s+', lines[j])
+                        if mobjj:
+                            exec_count = int(mobjj.group(1))
+                            break
+                    total_fmas += exec_count
                     # For each found, distinguish single and double prec.
                     if (mobj.group(1)[-1:] == "s"):
                         total_single_fp += comp_count
@@ -473,7 +500,7 @@ def flops_masked(dyn_file):
                         exit(1)
                     break
 
-        result.append([tid, total_single_fp, total_double_fp])
+        result.append([tid, total_single_fp, total_double_fp, total_fmas])
     # end while
     return result
 
@@ -483,6 +510,8 @@ result_masked = flops_masked("sde-dyn-mask-profile.txt")
 
 sum_single_flops = 0
 sum_double_flops = 0
+sum_total_inst = 0
+sum_total_fmas = 0
 for i in range(0, len(result_unmasked)):
     masked_idx = -1
     for j in range(0, len(result_masked)):
@@ -498,7 +527,13 @@ for i in range(0, len(result_unmasked)):
     print("\tUnmasked double prec. FLOPs: %d" % result_unmasked[i][3])
     sum_double_flops += result_masked[masked_idx][2]
     print("\tMasked double prec. FLOPs: %d" % result_masked[masked_idx][2])
+    sum_total_inst += result_unmasked[i][4]
+    print("\tInstructions executed: %d" % result_unmasked[i][4])
+    sum_total_fmas += (result_unmasked[i][5] + result_masked[masked_idx][3])
+    print("\tFMA instructions executed: %d" % (result_unmasked[i][5] + result_masked[masked_idx][3]))
 
 print("=============================================\nSum:")
 print("\tSingle prec. FLOPs: %d" % sum_single_flops)
 print("\tDouble prec. FLOPs: %d" % sum_double_flops)
+print("\tTotal instructions executed: %d" % sum_total_inst)
+print("\tTotal FMA instructions executed: %d" % sum_total_fmas)
