@@ -5,6 +5,8 @@ This project hosts a Python script `intel_sde_flops.py` to compute the number of
 * Compute FLOPs from either closed or known source application
 * FLOPs are counted for either the entire application or sections -- only the latter requires an annotation of sources
 * Support of all Intel Architecture SIMD extensions (SSE2-4.2, AVX, AVX2 and all flavors of AVX512)
+* Support of future (unreleased) Intel Architectures
+* Emulation of modern architectures on older systems -- e.g. run AVX512 Skylake applications on a Haswell system
 * Support for FMA instruction set extensions (counted as two operations)
 * Separation of single and double precision FLOPs
 * Listing FLOPs by threads
@@ -160,7 +162,7 @@ When using Intel SDE for counting the FLOPs, be aware of the following pecularit
     The reason behind this is not the lack of a dedicated division instruction -- it naively could have been compiled that way. The division, however, is a complex instruction which can take tenth of cycles to compute (e.g. see throughput of an [AVX division using double precision floating point](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=div&expand=2129,2126,2126) in the Intel Intrinsics Guide). Computing the [reciprocal](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=rcp&expand=2129,2126,2126,4450,2161,4450) and a [multiplication](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#techs=AVX&text=mult&expand=2129,2126,2126,4450,2161) to "emulate" the division is faster (approx. 4 vs. 10 cycles for Skylake).\
     Effects like this are caused by compiler optimizations. They are desired and make applications more efficient, but substitute even simple operations by multiple instructions.
     2. **Complex high level operations have no instruction counterpart:**\
-    More common than i. are high level operations to which no single instruction in the processor micro-architecture exists. Examples are the exponent operation (e.g. for AVX<sup>2</sup>), or simple arithmetic on complex numbers. For the latter, the compiler would separate real and imaginary to apply individual instructions onto. For the former, implementations from math libraries are used (e.g. libm, Intel's svml, GCC's libmvec, etc.). See 3. below for more information on numerical libaries.\
+    More common than i. are high level operations to which no single instruction in the processor micro-architecture exists. Examples are the exponent operation (e.g. for AVX<sup>2</sup>), or simple arithmetic on complex numbers. For the latter, the compiler would separate real and imaginary to apply individual instructions onto. For the former, implementations from math libraries are used (e.g. `libm`, Intel's svml, GCC's `libmvec`, etc.). See 3. below for more information on numerical libaries.\
     As a result, those implementations yield to additional instructions being executed to perform a single high level operation.
        
 2. **How are contracted instructions (so-called FMA) handled?**\
@@ -169,7 +171,9 @@ When using Intel SDE for counting the FLOPs, be aware of the following pecularit
    Despite the proper detection and counting of FMAs, there is a side-effect when porting an application from an architecture without FMA support (e.g. AVX) to one which supports it (e.g. AVX2). As FMAs combine two operations in one instruction, the number of total instructions exectuted by an application is expected to be lower compared to an architecture without FMA capabilities. This can be used to study the effects (and potential) of FMAs to the application of interest. The more the overal executed instructions are reduced the more the application might benefit from FMAs. For this, two compilations of an application are needed. One with the FMA instruction set and one without FMA. For the latter one could still use the instruction set from the former compilation but tell the compiler to not create FMA instructions. Options would be `-mno-fma` (GCC or LLVM/Clang), or `-no-fma` (Intel).
    
 3. **Numerical libraries can skew your results.**\
-   TODO
+   Similar to caveat 1., II. from above, using 3rd party math libraries makes it hard to compute the correct FLOPs. The reason lies in the implementation which is typically not known. Also the expectation of what a FLOP actually is might be different -- is a FLOP a BLAS level 1 operation, or level 2 or 3?\
+   Using such 3rd party math libraries can either be explicit or implicit. In cases the programmer uses such libraries explicitly, e.g. with OpenBLAS, ATLAS, or Intel MKL, functions are called directly which helps to recognize their scope. Implicit usage, however, is induced by the compiler itself in replacing `libm` functions by compiler specific runtime libraries, e.g. Intel's svml or GCC's `libmvec`. Even worse, depending on the SIMD instruction set available, 3rd party math libraries might decide during runtime of the application which optimized code paths to use.\
+   We recommend to exclude 3rd party math libraries from computation of FLOPs. This can be done using the markers as shown above.
 
 <sup>2</sup> An *exponent* instruction does not exist for SIMD extensions other than AVX512ER. Which could have side-effects when migrating from AVX to AVX512/AVX512ER.
 
