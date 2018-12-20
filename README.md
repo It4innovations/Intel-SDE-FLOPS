@@ -177,6 +177,11 @@ When using Intel SDE for counting the FLOPs, be aware of the following pecularit
 
 <sup>2</sup> An *exponent* instruction does not exist for SIMD extensions other than AVX512ER. Which could have side-effects when migrating from AVX to AVX512/AVX512ER.
 
+# TODO
+The following future SIMD instruction sets still need to be validated:
+* [AVX512_4FMAPS](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6&avx512techs=AVX512_4FMAPS)
+* [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI)
+
 # Acknowledgement
 This work was supported by The Ministry of Education, Youth and Sports from the Large Infrastructures for Research, Experimental Development and Innovations project ”IT4Innovations National Supercomputing Center – LM2015070”.
 
