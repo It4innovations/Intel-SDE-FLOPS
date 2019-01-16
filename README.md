@@ -182,6 +182,9 @@ The following future SIMD instruction sets still need to be validated:
 * [AVX512_4FMAPS](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6&avx512techs=AVX512_4FMAPS)
 * [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI)
 
+# Contact
+Should you have any feedback or questions, please contact the author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
+
 # Acknowledgement
 This work was supported by The Ministry of Education, Youth and Sports from the Large Infrastructures for Research, Experimental Development and Innovations project ”IT4Innovations National Supercomputing Center – LM2015070”.
 
