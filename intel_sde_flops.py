@@ -36,22 +36,24 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
 
+
 def flops_unmasked(mix_file):
     "Calculate the double/single FLOPS indicated in 'mix_file'"
     lines = []
-    with open (mix_file, 'rt') as in_file:
+    with open(mix_file, 'rt') as in_file:
         for line in in_file:
             lines.append(line)
 
     tid_end = -1
     result = []
-    while True: # iterate over all threads
+    while True:  # iterate over all threads
         tid = -1
         os_tid = -1
         # Find start line for thread (tid_start)
         tid_start = -1
         for i in range(tid_end, len(lines)):
-            mobj = re.match(r'^# EMIT_DYNAMIC_STATS FOR TID\s+([0-9]+)\s+OS-TID\s+([0-9]+)\s+EMIT', lines[i])
+            mobj = re.match(r'^# EMIT_DYNAMIC_STATS FOR TID\s+([0-9]+)\s'
+                            r'+OS-TID\s+([0-9]+)\s+EMIT', lines[i])
             if mobj:
                 tid_start = i
                 tid = int(mobj.group(1))
@@ -68,11 +70,11 @@ def flops_unmasked(mix_file):
                 tid_end = i
                 break
         if (old_tid_end == tid_end):
-                print("Error: END_DYNAMIC_STATS not found!")
-                exit(1)
+            print("Error: END_DYNAMIC_STATS not found!")
+            exit(1)
 
         # Find line "# $dynamic-counts"
-        gdc_line = -1 # zero-based!
+        gdc_line = -1  # zero-based!
         for i in range(tid_start, tid_end):
             mobj = re.match(r'# \$dynamic-counts$', lines[i])
             if mobj:
@@ -82,22 +84,22 @@ def flops_unmasked(mix_file):
             break
 
         # Find line "# iform count" (if not there, SDE did not use -iform)
-        iform_line = -1 # zero-based!
+        iform_line = -1  # zero-based!
         for i in range(gdc_line, tid_end):
             mobj = re.match(r'#\s+iform\s+count', lines[i])
             if mobj:
                 iform_line = i
                 break
         if iform_line == -1:
-                print("Error: -iform option was not used!")
-                exit(1)
+            print("Error: -iform option was not used!")
+            exit(1)
 
         # Read the instruction groups and counts
         instruction_group_count = {}
         for i in range(iform_line, tid_end):
             mobj = re.match(r'^([*a-zA-Z0-9-_]+)\s+([0-9]+)$', lines[i])
             if mobj:
-                 instruction_group_count[mobj.group(1)] = eval(mobj.group(2))
+                instruction_group_count[mobj.group(1)] = eval(mobj.group(2))
 
         # Compute FLOPs below...
         total_fmas = 0
@@ -358,20 +360,22 @@ def flops_unmasked(mix_file):
                 total_single_fp += instruction_group_count[cnt]
                 total_fmas += instruction_group_count[cnt]
 
-        result.append([tid, os_tid, total_single_fp, total_double_fp, total_inst, total_fmas])
+        result.append([tid, os_tid, total_single_fp, total_double_fp,
+                       total_inst, total_fmas])
     # end while
     return result
+
 
 def flops_masked(dyn_file):
     "Calculate the masked double/single FLOPS indicated in 'dyn_file'"
     lines = []
-    with open (dyn_file, 'rt') as in_file:
+    with open(dyn_file, 'rt') as in_file:
         for line in in_file:
             lines.append(line)
 
     tid_end = -1
     result = []
-    while True: # iterate over all threads
+    while True:  # iterate over all threads
         tid = -1
         # Find start line for thread (tid_start)
         tid_start = -1
@@ -391,42 +395,43 @@ def flops_masked(dyn_file):
                 tid_end = i
                 break
         if (old_tid_end == tid_end):
-                print("Error: </thread> not found!")
-                exit(1)
+            print("Error: </thread> not found!")
+            exit(1)
 
         # Find line "<thread-number>" for TID
-        th_num = -1 # zero-based!
+        th_num = -1  # zero-based!
         for i in range(tid_start, tid_end):
-            mobj = re.match(r'\s+<thread-number>\s+([0-9]+)\s+</thread-number>', lines[i])
+            mobj = re.match(r'\s+<thread-number>\s+([0-9]+)\s+'
+                            r'</thread-number>', lines[i])
             if mobj:
                 th_num = i
                 tid = int(mobj.group(1))
                 break
         if th_num == -1:
-                print("Error: <thread-number> not found!")
-                exit(1)
+            print("Error: <thread-number> not found!")
+            exit(1)
 
         # Find line "<summarytable>"
-        sum_line = -1 # zero-based!
+        sum_line = -1  # zero-based!
         for i in range(tid_start, tid_end):
             mobj = re.match(r'\s+<summarytable>', lines[i])
             if mobj:
                 sum_line = i
                 break
         if sum_line == -1:
-                print("Error: <summarytable> not found!")
-                exit(1)
+            print("Error: <summarytable> not found!")
+            exit(1)
 
         # Find line "</summarytable>"
-        endsum_line = -1 # zero-based!
+        endsum_line = -1  # zero-based!
         for i in range(sum_line, tid_end):
             mobj = re.match(r'\s+</summarytable>', lines[i])
             if mobj:
                 endsum_line = i
                 break
         if endsum_line == -1:
-                print("Error: </summarytable> not found!")
-                exit(1)
+            print("Error: </summarytable> not found!")
+            exit(1)
 
         # Compute masked FLOPs below...
         total_fmas = 0
@@ -434,22 +439,24 @@ def flops_masked(dyn_file):
         total_double_fp = 0
 
         # Read the masked instruction counts (comp_count) for "fp" types
-        instruction_group_count = {}
+        instruction_group_count = {}  # [F841]: "assigned to but never used"
         for i in range(sum_line, endsum_line):
-            mobj = re.match(r'^\s+masked\s+mask\s+[0-9]+b\s+[0-9]+elem\s+([0-9]+)b\s+fp\s+[|]\s+[0-9]+\s+([0-9]+)\s+[0-9.]+$', lines[i])
+            mobj = re.match(r'^\s+masked\s+mask\s+[0-9]+b\s+[0-9]+elem\s+'
+                            r'([0-9]+)b\s+fp\s+[|]\s+[0-9]+\s+([0-9]+)\s+'
+                            r'[0-9.]+$', lines[i])
             if mobj:
-                fp_type_bits = int(mobj.group(1)) # 32 (single) or 64 (double)
+                fp_type_bits = int(mobj.group(1))  # 32 (single) or 64 (double)
                 if (fp_type_bits == 32):
-                    total_single_fp += int(mobj.group(2)) # comp_count
+                    total_single_fp += int(mobj.group(2))  # comp_count
                 elif (fp_type_bits == 64):
-                    total_double_fp += int(mobj.group(2)) # comp_count
+                    total_double_fp += int(mobj.group(2))  # comp_count
                 else:
                     print("Error: Unkown element_s!")
                     exit(1)
 
         # Read the individual instruction details and find FMAs
         idet_end = tid_start
-        while True: # iterate over all instruction details
+        while True:  # iterate over all instruction details
             # Find start line for instruction details (idet_start)
             idet_start = -1
             for i in range(idet_end, tid_end):
@@ -468,24 +475,27 @@ def flops_masked(dyn_file):
                     idet_end = i
                     break
             if (old_idet_end == idet_end):
-                    print("Error: </instruction-details> not found!")
-                    exit(1)
+                print("Error: </instruction-details> not found!")
+                exit(1)
 
             # Identify if instruction is FMA (or FMS)
             for i in range(idet_start, idet_end):
-                mobj = re.match(r'\s+<disassembly>\s+(vf(m|nm)(add|sub)[0-9a-z]+)\s+', lines[i])
+                mobj = re.match(r'\s+<disassembly>\s+'
+                                r'(vf(m|nm)(add|sub)[0-9a-z]+)\s+', lines[i])
                 if mobj:
                     # For each found, get computation count
                     comp_count = 0
                     for j in range(idet_start, idet_end):
-                        mobjj = re.match(r'\s+<computation-count>\s+([0-9]+)\s+', lines[j])
+                        mobjj = re.match(r'\s+<computation-count>\s+'
+                                         r'([0-9]+)\s+', lines[j])
                         if mobjj:
                             comp_count = int(mobjj.group(1))
                             break
                     # For each found, get execution count
                     exec_count = 0
                     for j in range(idet_start, idet_end):
-                        mobjj = re.match(r'\s+<execution-counts>\s+([0-9]+)\s+', lines[j])
+                        mobjj = re.match(r'\s+<execution-counts>\s+'
+                                         r'([0-9]+)\s+', lines[j])
                         if mobjj:
                             exec_count = int(mobjj.group(1))
                             break
@@ -504,6 +514,7 @@ def flops_masked(dyn_file):
     # end while
     return result
 
+
 # TODO: Should we allow the user to select the files manually?
 result_unmasked = flops_unmasked("sde-mix-out.txt")
 result_masked = flops_masked("sde-dyn-mask-profile.txt")
@@ -515,10 +526,11 @@ sum_total_fmas = 0
 for i in range(0, len(result_unmasked)):
     masked_idx = -1
     for j in range(0, len(result_masked)):
-            if (result_masked[j][0] == result_unmasked[i][0]):
-                masked_idx = j
-                break
-    print("TID: %d (OS-TID: %d):" % (result_unmasked[i][0], result_unmasked[i][1]))
+        if (result_masked[j][0] == result_unmasked[i][0]):
+            masked_idx = j
+            break
+    print("TID: %d (OS-TID: %d):" % (result_unmasked[i][0],
+                                     result_unmasked[i][1]))
     sum_single_flops += result_unmasked[i][2]
     print("\tUnmasked single prec. FLOPs: %d" % result_unmasked[i][2])
     sum_single_flops += result_masked[masked_idx][1]
@@ -530,7 +542,8 @@ for i in range(0, len(result_unmasked)):
     sum_total_inst += result_unmasked[i][4]
     print("\tInstructions executed: %d" % result_unmasked[i][4])
     sum_total_fmas += (result_unmasked[i][5] + result_masked[masked_idx][3])
-    print("\tFMA instructions executed: %d" % (result_unmasked[i][5] + result_masked[masked_idx][3]))
+    print("\tFMA instructions executed: %d" % (result_unmasked[i][5] +
+                                               result_masked[masked_idx][3]))
 
 print("=============================================\nSum:")
 print("\tSingle prec. FLOPs: %d" % sum_single_flops)
