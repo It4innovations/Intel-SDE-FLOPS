@@ -146,7 +146,10 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
 In the example, one loop of the application `app` was annotated with the start/stop markers. Hence only FLOPs executed within the loop are measured.\
 \
 **Note**:\
-The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.
+The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.\
+\
+**Note for using markers with Python scripts**:\
+For using markers within any Python script, refer to the instruction within the `for_python` subdirectory. It follows the same principles as to using markers directly in C/C++.
 
 # Caveats
 When using Intel SDE for counting the FLOPs, be aware of the following pecularities when using the results:
