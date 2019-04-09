@@ -148,8 +148,13 @@ In the example, one loop of the application `app` was annotated with the start/s
 **Note**:  
 The markers can be placed arbitrarily in the source code. However, it is recommended not to nest them.  
   
-**Note for using markers with Python scripts**:  
-For using markers within any Python script, refer to the instruction within the `for_python` subdirectory. It follows the same principles as to using markers directly in C/C++.
+**Note for using markers with other languages**:  
+* Python:  
+For using markers within any Python script, refer to the instruction within the `for_python` subdirectory.
+* Fortran:  
+For using markers within any Fortran application, refer to the instruction within the `for_fortran` subdirectory.
+  
+All follow the same principles as to using markers directly in C/C++.
 
 # Caveats
 When using Intel SDE for counting the FLOPs, be aware of the following pecularities when using the results:
