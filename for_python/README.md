@@ -7,10 +7,18 @@ Use this library within your Python script with the `ctypes.cdll` class:
 
     from ctypes import cdll
     lib_sde_markers = cdll.LoadLibrary('./libsde_markers.so')
+    
     ...
-    lib_sde_markers.sde_start_marker()
+    lib_sde_markers.sde_start_marker() # start collecting events from here on
+    ... # 1st area of interest
+    lib_sde_markers.sde_stop_marker() # pause collection of events
+    
+    ... # non-interesting section
+    
+    lib_sde_markers.sde_start_marker() # resume event collection
+    ... # 2nd area of interest
+    lib_sde_markers.sde_stop_marker() # stop collection (final pause)
     ...
-    lib_sde_markers.sde_stop_marker()
 
 Intel SDE can then be used like so:\
 `$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- python your_script.py`\
