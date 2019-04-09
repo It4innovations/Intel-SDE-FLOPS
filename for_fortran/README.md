@@ -32,6 +32,7 @@ Intel SDE can then be used like so:
 The `sde_start_marker()` and `sde_stop_marker()` starts/resumes and stops/pauses the collection of events, respectively.  
   
 **Example:**
+
     $ gcc sde_markers.c -fPIC -c && ar rcs libsde_markers.a sde_markers.o
     $ gfortran fortran_app.f90 -L. -lsde_markers -O0 -o fortran_app
     $ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- ./fortran_app
