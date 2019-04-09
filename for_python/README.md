@@ -21,7 +21,7 @@ Use this library within your Python script with the `ctypes.cdll` class:
     ...
 
 Intel SDE can then be used like so:  
-`$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- python your_script.py`  
+`$ sde64 -iform -mix -dyn_mask_profile -start_ssc_mark FACE:repeat -stop_ssc_mark DEAD:repeat -- python python_script.py`  
   
 The `sde_start_marker()` and `sde_stop_marker()` starts/resumes and stops/pauses the collection of events, respectively.
 
