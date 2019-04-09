@@ -150,9 +150,9 @@ The markers can be placed arbitrarily in the source code. However, it is recomme
   
 **Note for using markers with other languages**:  
 * Python:  
-For using markers within any Python script, refer to the instruction within the `for_python` subdirectory.
+For using markers within any Python script, refer to the instruction within the [`for_python`](./for_python/) subdirectory.
 * Fortran:  
-For using markers within any Fortran application, refer to the instruction within the `for_fortran` subdirectory.
+For using markers within any Fortran application, refer to the instruction within the [`for_fortran`](./for_fortran/) subdirectory.
   
 All follow the same principles as to using markers directly in C/C++.
 
