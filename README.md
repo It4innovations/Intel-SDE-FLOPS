@@ -12,6 +12,7 @@ This project hosts a Python script `intel_sde_flops.py` to compute the number of
 * Listing FLOPs by threads
 * Awareness of masking instructions (AVX512)
 * The script works for both Python 2.x and 3.x
+* Should also work on AMD processors (untested: please give feedback!)
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
