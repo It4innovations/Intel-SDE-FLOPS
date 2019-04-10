@@ -16,7 +16,7 @@ This project hosts a Python script `intel_sde_flops.py` to compute the number of
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.16.0-2018-01-30-lin.tar.bz2`](https://software.intel.com/protected-download/267266/144917)).  
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.35.0-2019-03-11-lin.tar.bz2`](https://software.intel.com/protected-download/267266/144917)).  
 Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
