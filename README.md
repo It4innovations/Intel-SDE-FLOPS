@@ -92,7 +92,7 @@ By default, Intel SDE (`sde64`) defaults to the processor on which it is execute
 
 E.g., to emulate an Icelake server CPU, invoke Intel SDE like this:  
   
-`$ sde64 -icx -iform -mix -dyn_mask_profile -- app`
+`$ sde64 -icx -iform -mix -dyn_mask_profile -- ./app`
 
 ## FLOPs of Selected Sections
 To restrict the FLOPs counting to specific sections within an application place the following markers in the source code:
@@ -159,9 +159,9 @@ The markers can be placed arbitrarily in the source code. However, it is recomme
   
 **Note for using markers with other languages**:  
 * Python:  
-For using markers within any Python script, refer to the instruction within the [`for_python`](./for_python/) subdirectory.
+For using markers within any Python script, refer to the instructions within the [`for_python`](./for_python/) subdirectory.
 * Fortran:  
-For using markers within any Fortran application, refer to the instruction within the [`for_fortran`](./for_fortran/) subdirectory.
+For using markers within any Fortran application, refer to the instructions within the [`for_fortran`](./for_fortran/) subdirectory.
   
 All follow the same principles as to using markers directly in C/C++.
 
