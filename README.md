@@ -64,27 +64,35 @@ It furthermore shows the number of overall instructions executed by thread (e.g.
   
 **Note**:  
 By default, Intel SDE (`sde64`) defaults to the processor on which it is executed. It is also possible to emulate another/newer processors (instruction sets) by the following options (see `sde64 --help`):
-
-    -mrm  Set chip-check and CPUID for Intel(R) Merom CPU
-    -pnr  Set chip-check and CPUID for Intel(R) Penryn CPU
-    -nhm  Set chip-check and CPUID for Intel(R) Nehalem CPU
-    -wsm  Set chip-check and CPUID for Intel(R) Westmere CPU
-    -snb  Set chip-check and CPUID for Intel(R) Sandy Bridge CPU
-    -ivb  Set chip-check and CPUID for Intel(R) Ivy Bridge CPU
-    -hsw  Set chip-check and CPUID for Intel(R) Haswell CPU
-    -bdw  Set chip-check and CPUID for Intel(R) Broadwell CPU
-    -slt  Set chip-check and CPUID for Intel(R) Saltwell CPU
-    -slm  Set chip-check and CPUID for Intel(R) Silvermont CPU
-    -glm  Set chip-check and CPUID for Intel(R) Goldmont CPU
-    -skl  Set chip-check and CPUID for Intel(R) Skylake CPU
-    -skx  Set chip-check and CPUID for Intel(R) Skylake server CPU
-    -cnl  Set chip-check and CPUID for Intel(R) Cannonlake CPU
-    -knl  Set chip-check and CPUID for Intel(R) Knights landing CPU
-    -knm  Set chip-check and CPUID for Intel(R) Knights mill CPU
-
-E.g., to emulate a Cannonlake CPU, invoke Intel SDE like this:  
   
-`$ sde64 -cnl -iform -mix -dyn_mask_profile -- app`
+     -quark  Set chip-check and CPUID for Intel(R) Quark CPU
+     -p4     Set chip-check and CPUID for Intel(R) Pentium4 CPU
+     -p4p    Set chip-check and CPUID for Intel(R) Pentium4 Prescott CPU
+     -mrm    Set chip-check and CPUID for Intel(R) Merom CPU
+     -pnr    Set chip-check and CPUID for Intel(R) Penryn CPU
+     -nhm    Set chip-check and CPUID for Intel(R) Nehalem CPU
+     -wsm    Set chip-check and CPUID for Intel(R) Westmere CPU
+     -snb    Set chip-check and CPUID for Intel(R) Sandy Bridge CPU
+     -ivb    Set chip-check and CPUID for Intel(R) Ivy Bridge CPU
+     -hsw    Set chip-check and CPUID for Intel(R) Haswell CPU
+     -bdw    Set chip-check and CPUID for Intel(R) Broadwell CPU
+     -slt    Set chip-check and CPUID for Intel(R) Saltwell CPU
+     -slm    Set chip-check and CPUID for Intel(R) Silvermont CPU
+     -glm    Set chip-check and CPUID for Intel(R) Goldmont CPU
+     -tnt    Set chip-check and CPUID for Intel(R) Tremmont CPU
+     -skl    Set chip-check and CPUID for Intel(R) Skylake CPU
+     -clx    Set chip-check and CPUID for Intel(R) Cascadelake CPU
+     -skx    Set chip-check and CPUID for Intel(R) Skylake server CPU
+     -cnl    Set chip-check and CPUID for Intel(R) Cannonlake CPU
+     -icl    Set chip-check and CPUID for Intel(R) Icelake CPU
+     -icx    Set chip-check and CPUID for Intel(R) Icelake server CPU
+     -knl    Set chip-check and CPUID for Intel(R) Knights landing CPU
+     -knm    Set chip-check and CPUID for Intel(R) Knights mill CPU
+     -future Set chip-check and CPUID for Intel(R) future chip CPU
+
+E.g., to emulate an Icelake server CPU, invoke Intel SDE like this:  
+  
+`$ sde64 -icx -iform -mix -dyn_mask_profile -- app`
 
 ## FLOPs of Selected Sections
 To restrict the FLOPs counting to specific sections within an application place the following markers in the source code:
