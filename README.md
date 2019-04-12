@@ -165,6 +165,19 @@ For using markers within any Fortran application, refer to the instructions with
   
 All follow the same principles as to using markers directly in C/C++.
 
+## User Specified Profiling Files
+Instead of using the default files `sde-mix-out.txt` and `sde-dyn-mask-profile.txt` in the local working directory, the script also accepts user specified files:  
+`$ python intel_sde_flops.py [<sde_mix_out> <sde_dyn_mask_profile>]`  
+
+If no arguments are used, defaults are:
+* `<sde_mix_out>`: `sde-mix-out.txt`
+* `<sde_dyn_mask_profile>`: `sde-dyn-mask-profile.txt`
+
+If arguments are used, specify both in correct order:
+* `<sde_mix_out> <sde_dyn_mask_profile>`
+
+The files `<sde_mix_out>` and `<sde_dyn_mask_profile>` are created by Intel SDE's `-mix -iform` and `-dyn_mask_profile` options, respectively.
+
 # Caveats
 When using Intel SDE for counting the FLOPs, be aware of the following pecularities when using the results:
 
