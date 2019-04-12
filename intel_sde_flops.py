@@ -439,7 +439,6 @@ def flops_masked(dyn_file):
         total_double_fp = 0
 
         # Read the masked instruction counts (comp_count) for "fp" types
-        instruction_group_count = {}  # [F841]: "assigned to but never used"
         for i in range(sum_line, endsum_line):
             mobj = re.match(r'^\s+masked\s+mask\s+[0-9]+b\s+[0-9]+elem\s+'
                             r'([0-9]+)b\s+fp\s+[|]\s+[0-9]+\s+([0-9]+)\s+'
