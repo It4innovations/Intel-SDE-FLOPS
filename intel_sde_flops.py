@@ -44,7 +44,10 @@ def usage():
     print("  <sde_mix_out>: sde-mix-out.txt")
     print("  <sde_dyn_mask_profile>: sde-dyn-mask-profile.txt")
     print("If arguments are used, specify both in correct order:")
-    print("  <sde_mix_out> <sde_dyn_mask_profile>")
+    print("  <sde_mix_out> <sde_dyn_mask_profile>\n")
+    print("The files <sde_mix_out> and <sde_dyn_mask_profile> are created by "
+          "Intel SDE's '-mix -iform' and '-dyn_mask_profile' options, "
+          "respectively.")
 
 
 def flops_unmasked(mix_file):
