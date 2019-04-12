@@ -35,14 +35,37 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import re
+import sys
+
+
+def usage():
+    print("Usage:\npython %s [<sde_mix_out> <sde_dyn_mask_profile>]\n" %  sys.argv[0])
+    print("If no arguments are used, defaults are:")
+    print("  <sde_mix_out>: sde-mix-out.txt")
+    print("  <sde_dyn_mask_profile>: sde-dyn-mask-profile.txt")
+    print("If arguments are used, specify both in correct order:")
+    print("  <sde_mix_out> <sde_dyn_mask_profile>")
 
 
 def flops_unmasked(mix_file):
     "Calculate the double/single FLOPS indicated in 'mix_file'"
     lines = []
-    with open(mix_file, 'rt') as in_file:
-        for line in in_file:
-            lines.append(line)
+    try:
+        with open(mix_file, 'rt') as in_file:
+            for line in in_file:
+                lines.append(line)
+    except:
+        print("Error: File '%s' does not exist!\n" % mix_file)
+        usage()
+        exit(1)
+
+    # Brief validity check whether it's the correct file type...
+    if not any(re.match(r'^# EMIT_DYNAMIC_STATS FOR TID', line)
+               for line in lines):
+        print("Error: File '%s' does not seem to be created from Intel SDE's "
+              "'-mix' option!\n" % mix_file)
+        usage()
+        exit(1)
 
     tid_end = -1
     result = []
@@ -91,7 +114,9 @@ def flops_unmasked(mix_file):
                 iform_line = i
                 break
         if iform_line == -1:
-            print("Error: -iform option was not used!")
+            print("Error: File '%s' does not seem to be created from Intel "
+                  "SDE's '-iform' option!\n" % mix_file)
+            usage()
             exit(1)
 
         # Read the instruction groups and counts
@@ -369,9 +394,22 @@ def flops_unmasked(mix_file):
 def flops_masked(dyn_file):
     "Calculate the masked double/single FLOPS indicated in 'dyn_file'"
     lines = []
-    with open(dyn_file, 'rt') as in_file:
-        for line in in_file:
-            lines.append(line)
+    try:
+        with open(dyn_file, 'rt') as in_file:
+            for line in in_file:
+                lines.append(line)
+    except:
+        print("Error: File '%s' does not exist!\n" % dyn_file)
+        usage()
+        exit(1)
+
+    # Brief validity check whether it's the correct file type...
+    if not any(re.match(r'\s+<thread-number>', line)
+               for line in lines):
+        print("Error: File '%s' does not seem to be created from Intel SDE's "
+              "'-dyn_mask_profile' option!\n" % dyn_file)
+        usage()
+        exit(1)
 
     tid_end = -1
     result = []
@@ -513,10 +551,22 @@ def flops_masked(dyn_file):
     # end while
     return result
 
+if (len(sys.argv) == 3):
+    str(sys.argv)
+    # User selected profiling files (note the order!)
+    file_sde_mix = sys.argv[1]
+    file_sde_dyn = sys.argv[2]
+elif (len(sys.argv) == 1):
+    # Default profiling files
+    file_sde_mix = "sde-mix-out.txt"
+    file_sde_dyn = "sde-dyn-mask-profile.txt"
+else:
+    print("Error: Incorrect arguments!\n")
+    usage()
+    exit(1)
 
-# TODO: Should we allow the user to select the files manually?
-result_unmasked = flops_unmasked("sde-mix-out.txt")
-result_masked = flops_masked("sde-dyn-mask-profile.txt")
+result_unmasked = flops_unmasked(file_sde_mix)
+result_masked = flops_masked(file_sde_dyn)
 
 sum_single_flops = 0
 sum_double_flops = 0
