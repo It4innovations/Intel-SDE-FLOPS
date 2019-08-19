@@ -215,6 +215,7 @@ When using Intel SDE for counting the FLOPs, be aware of the following pecularit
 The following future SIMD instruction sets still need to be validated:
 * [AVX512_4FMAPS](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6&avx512techs=AVX512_4FMAPS)
 * [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI)
+* Add [BF16 support](https://github.com/It4innovations/Intel-SDE-FLOPS/issues/5) once Intel SDE adds it
 
 # Contact
 Should you have any feedback or questions, please contact the author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
