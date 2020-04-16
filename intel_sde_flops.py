@@ -32,11 +32,17 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+History:
+- 1.1: Added BF16 and 4FMA support
+- 1.0: Initial version (never labled like that)
 """
 
 import re
 import sys
 
+__version__ = "1.1"
 
 def usage():
     print("Usage:\npython %s [<sde_mix_out> <sde_dyn_mask_profile>]\n" %  sys.argv[0])
@@ -50,7 +56,7 @@ def usage():
           "respectively.")
 
 
-def flops_unmasked(mix_file):
+def flops_mix(mix_file):
     "Calculate the double/single FLOPS indicated in 'mix_file'"
     lines = []
     try:
@@ -394,8 +400,10 @@ def flops_unmasked(mix_file):
     return result
 
 
-def flops_masked(dyn_file):
+def flops_dyn(dyn_file):
     "Calculate the masked double/single FLOPS indicated in 'dyn_file'"
+    warn4FMA = True
+    warnBF16 = True
     lines = []
     try:
         with open(dyn_file, 'rt') as in_file:
@@ -478,6 +486,8 @@ def flops_masked(dyn_file):
         total_fmas = 0
         total_single_fp = 0
         total_double_fp = 0
+        total_single_fp_m = 0
+        total_double_fp_m = 0
 
         # Read the masked instruction counts (comp_count) for "fp" types
         for i in range(sum_line, endsum_line):
@@ -487,9 +497,9 @@ def flops_masked(dyn_file):
             if mobj:
                 fp_type_bits = int(mobj.group(1))  # 32 (single) or 64 (double)
                 if (fp_type_bits == 32):
-                    total_single_fp += int(mobj.group(2))  # comp_count
+                    total_single_fp_m += int(mobj.group(2))  # comp_count
                 elif (fp_type_bits == 64):
-                    total_double_fp += int(mobj.group(2))  # comp_count
+                    total_double_fp_m += int(mobj.group(2))  # comp_count
                 else:
                     print("Error: Unkown element_s!")
                     exit(1)
@@ -539,21 +549,137 @@ def flops_masked(dyn_file):
                         if mobjj:
                             exec_count = int(mobjj.group(1))
                             break
+
+                    mobjm = re.match(r'\s+<disassembly>\s+'
+                                     r'vf.*(\{k[0-9]+\})', lines[i])
+                    is_masked = False
+                    if mobjm is not None:
+                        is_masked = True
+
                     total_fmas += exec_count
                     # For each found, distinguish single and double prec.
                     if (mobj.group(1)[-1:] == "s"):
-                        total_single_fp += comp_count
+                        if is_masked:
+                            total_single_fp_m += comp_count
+                        else:
+                            total_single_fp += comp_count
                     elif (mobj.group(1)[-1:] == "d"):
-                        total_double_fp += comp_count
+                        if is_masked:
+                            total_double_fp_m += comp_count
+                        else:
+                            total_double_fp += comp_count
                     else:
                         print("Error: Unknown FP type for FMA!")
                         exit(1)
                     break
 
-        result.append([tid, total_single_fp, total_double_fp, total_fmas])
+            # Identify if instruction is 4FMA
+            for i in range(idet_start, idet_end):
+                mobj = re.match(r'\s+<disassembly>\s+'
+                                r'(v4f(m|nm)add[a-z]+)\s+', lines[i])
+                if mobj:
+                    # For each found, get computation count
+                    comp_count = 0
+                    for j in range(idet_start, idet_end):
+                        mobjj = re.match(r'\s+<computation-count>\s+'
+                                         r'([0-9]+)\s+', lines[j])
+                        if mobjj:
+                            comp_count = int(mobjj.group(1))
+                            break
+                    # For each found, get execution count
+                    exec_count = 0
+                    for j in range(idet_start, idet_end):
+                        mobjj = re.match(r'\s+<execution-counts>\s+'
+                                         r'([0-9]+)\s+', lines[j])
+                        if mobjj:
+                            exec_count = int(mobjj.group(1))
+                            break
+
+                    mobjm = re.match(r'\s+<disassembly>\s+'
+                                     r'v4f.*(\{k[0-9]+\})', lines[i])
+                    is_masked = False
+                    if mobjm is not None:
+                        is_masked = True
+
+                    total_fmas += 4 * exec_count
+                    # For each found, increase single prec. count.
+                    # There is no double prec. support for this instruction.
+                    if (mobj.group(1)[-1:] == "s"):
+                        # TODO:
+                        # Once supported within Intel SDE, validate!
+                        # Current Intel SDE 8.50 does not support 4FMA for
+                        # -icx, but should!?
+                        if is_masked:
+                            total_single_fp_m += 3 * comp_count
+                        else:
+                            total_single_fp += 4 * comp_count
+
+                        if warn4FMA:
+                            print("Warning: 4FMA is currently experimental!")
+                            warn4FMA = False
+                    else:
+                        print("Error: Unknown FP type for 4FMA!")
+                        exit(1)
+                    break
+
+            # Identify if instruction is DPBF16
+            # Note:
+            # We only consider DP (dot product) instructions and ignore type
+            # converts (BF16 -> FP32)!
+            for i in range(idet_start, idet_end):
+                mobj = re.match(r'\s+<disassembly>\s+'
+                                r'(vdpbf16[a-z]+)\s+', lines[i])
+                if mobj:
+                    # For each found, get computation count
+                    comp_count = 0
+                    for j in range(idet_start, idet_end):
+                        mobjj = re.match(r'\s+<computation-count>\s+'
+                                         r'([0-9]+)\s+', lines[j])
+                        if mobjj:
+                            comp_count = int(mobjj.group(1))
+                            break
+                    # For each found, get execution count
+                    exec_count = 0
+                    for j in range(idet_start, idet_end):
+                        mobjj = re.match(r'\s+<execution-counts>\s+'
+                                         r'([0-9]+)\s+', lines[j])
+                        if mobjj:
+                            exec_count = int(mobjj.group(1))
+                            break
+
+                    # This is a workaround since (current?) Intel SDE is
+                    # inconsistent for BF16 instructions when differentiating
+                    # between masked and un-masked versions. For other
+                    # instructions, un-masked ones will be properly counted
+                    # in the sde-mix-out.txt report, but BF16 ones are not.
+                    mobjm = re.match(r'\s+<disassembly>\s+'
+                                     r'vdpbf16.*(\{k[0-9]+\})', lines[i])
+                    is_masked = False
+                    if mobjm is not None:
+                        is_masked = True
+
+                    # For each found, increase single prec. count.
+                    # There is no double prec. support for this instruction.
+                    if (mobj.group(1)[-1:] == "s"):
+                        if is_masked:
+                            total_single_fp_m += 3 * comp_count
+                        else:
+                            total_single_fp += 4 * comp_count
+
+                        if warnBF16:
+                            print("Warning: BF16 is currently experimental!")
+                            warnBF16 = False
+                    else:
+                        print("Error: Unknown FP type for DPBF16!")
+                        exit(1)
+                    break
+
+        result.append([tid, total_single_fp_m, total_double_fp_m, total_fmas,
+                       total_single_fp, total_double_fp])
     # end while
     return result
 
+print("Version: %s" % __version__)
 if (len(sys.argv) == 3):
     str(sys.argv)
     # User selected profiling files (note the order!)
@@ -568,34 +694,36 @@ else:
     usage()
     exit(1)
 
-result_unmasked = flops_unmasked(file_sde_mix)
-result_masked = flops_masked(file_sde_dyn)
+result_mix = flops_mix(file_sde_mix)
+result_dyn = flops_dyn(file_sde_dyn)
 
 sum_single_flops = 0
 sum_double_flops = 0
 sum_total_inst = 0
 sum_total_fmas = 0
-for i in range(0, len(result_unmasked)):
+for i in range(0, len(result_mix)):
     masked_idx = -1
-    for j in range(0, len(result_masked)):
-        if (result_masked[j][0] == result_unmasked[i][0]):
+    for j in range(0, len(result_dyn)):
+        if (result_dyn[j][0] == result_mix[i][0]):
             masked_idx = j
             break
-    print("TID: %d (OS-TID: %d):" % (result_unmasked[i][0],
-                                     result_unmasked[i][1]))
-    sum_single_flops += result_unmasked[i][2]
-    print("\tUnmasked single prec. FLOPs: %d" % result_unmasked[i][2])
-    sum_single_flops += result_masked[masked_idx][1]
-    print("\tMasked single prec. FLOPs: %d" % result_masked[masked_idx][1])
-    sum_double_flops += result_unmasked[i][3]
-    print("\tUnmasked double prec. FLOPs: %d" % result_unmasked[i][3])
-    sum_double_flops += result_masked[masked_idx][2]
-    print("\tMasked double prec. FLOPs: %d" % result_masked[masked_idx][2])
-    sum_total_inst += result_unmasked[i][4]
-    print("\tInstructions executed: %d" % result_unmasked[i][4])
-    sum_total_fmas += (result_unmasked[i][5] + result_masked[masked_idx][3])
-    print("\tFMA instructions executed: %d" % (result_unmasked[i][5] +
-                                               result_masked[masked_idx][3]))
+    print("TID: %d (OS-TID: %d):" % (result_mix[i][0],
+                                     result_mix[i][1]))
+    sum_single_flops += result_mix[i][2] + result_dyn[i][4]
+    print("\tUnmasked single prec. FLOPs: %d" % (result_mix[i][2] +
+                                                 result_dyn[i][4]))
+    sum_single_flops += result_dyn[masked_idx][1]
+    print("\tMasked single prec. FLOPs: %d" % result_dyn[masked_idx][1])
+    sum_double_flops += result_mix[i][3] + result_dyn[i][5]
+    print("\tUnmasked double prec. FLOPs: %d" % (result_mix[i][3] +
+                                                 result_dyn[i][5]))
+    sum_double_flops += result_dyn[masked_idx][2]
+    print("\tMasked double prec. FLOPs: %d" % result_dyn[masked_idx][2])
+    sum_total_inst += result_mix[i][4]
+    print("\tInstructions executed: %d" % result_mix[i][4])
+    sum_total_fmas += (result_mix[i][5] + result_dyn[masked_idx][3])
+    print("\tFMA instructions executed: %d" % (result_mix[i][5] +
+                                               result_dyn[masked_idx][3]))
 
 print("=============================================\nSum:")
 print("\tSingle prec. FLOPs: %d" % sum_single_flops)
