@@ -98,6 +98,7 @@ By default, Intel SDE (`sde64`) defaults to the processor on which it is execute
      -knl    Set chip-check and CPUID for Intel(R) Knights landing CPU
      -knm    Set chip-check and CPUID for Intel(R) Knights mill CPU
      -tgl    Set chip-check and CPUID for Intel(R) Tiger Lake CPU
+     -spr    Set chip-check and CPUID for Intel(R) Sapphire Rapids CPU
      -future Set chip-check and CPUID for Intel(R) Future chip CPU
 
 
