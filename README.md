@@ -15,13 +15,14 @@ This project hosts the Python script `intel_sde_flops.py` to compute the number 
 * Should also work on AMD processors (untested: please give feedback!)
 
 New with version 1.1 (experimental):
- * AVX-512_4FMAPS: 4x FMA for single precision FP (Ice Lake server `-icx`)  
-   Note: Current Intel SDE (8.50) does not support this yet!
+ * ~~AVX-512_4FMAPS: 4x FMA for single precision FP (Ice Lake server `-icx`)~~  
+   ~~Note: Current Intel SDE (8.50) does not support this yet!~~  
+   Erratum: Seems AVX-512_4FMAPS is not planned for Intel Core/Xeon processors. This was only in Intel Xeon Phi Processor (KNM: Knights Mill), which was never released to market.
  * AVX-512_BF16: bfloat16 dot product (Cooper Lake `-cpx`)
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.50.0-2020-03-26-lin.tar.bz2`](https://software.intel.com/en-us/articles/pre-release-license-agreement-for-intel-software-development-emulator-accept-end-user-license-agreement-and-download)).  
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.56.0-2020-07-05-lin.tar.bz2`](https://software.intel.com/en-us/articles/pre-release-license-agreement-for-intel-software-development-emulator-accept-end-user-license-agreement-and-download)).  
 Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
@@ -229,7 +230,8 @@ To ensure proper counting over changes of the script and different Intel SDE ver
 
 # TODO
 The following future SIMD instruction sets still need to be validated:
-* [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI): These instructions operate on integer data types. It would require the script to also count integer operations (IOPS) which currently is not implemented.
+* [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI): These instructions operate on integer data types. It would require the script to also count integer operations (IOPS) which currently is not implemented.  
+* [AMX-BF16](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#amxtechs=AMXBF16): Intel Advanced Matrix Extensions (Intel AMX) which also operates on BF16 types. Curently this is only a tiled BF16 dot product.
 
 # Contact
 Should you have any feedback or questions, please contact the author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
