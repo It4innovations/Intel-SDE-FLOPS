@@ -22,7 +22,7 @@ New with version 1.1 (experimental):
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.56.0-2020-07-05-lin.tar.bz2`](https://software.intel.com/en-us/articles/pre-release-license-agreement-for-intel-software-development-emulator-accept-end-user-license-agreement-and-download)).  
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-8.59.0-2020-10-05-lin.tar.bz2`](https://software.intel.com/en-us/articles/pre-release-license-agreement-for-intel-software-development-emulator-accept-end-user-license-agreement-and-download)).  
 Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
@@ -233,6 +233,7 @@ To ensure proper counting over changes of the script and different Intel SDE ver
 The following future SIMD instruction sets still need to be validated:
 * [AVX512_VNNI](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#expand=3492,3488,2197,6,2179&avx512techs=AVX512_VNNI): These instructions operate on integer data types. It would require the script to also count integer operations (IOPS) which currently is not implemented.  
 * [AMX-BF16](https://software.intel.com/sites/landingpage/IntrinsicsGuide/#amxtechs=AMXBF16): Intel Advanced Matrix Extensions (Intel AMX) which also operates on BF16 types. Curently this is only a tiled BF16 dot product.
+Unit test was added but Intel SDE does not seem to count the single FP (or BF16) operations.
 
 # Contact
 Should you have any feedback or questions, please contact the author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
