@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <immintrin.h>
+#include <malloc.h>
 
 #ifndef __SSC_MARK
 #define __SSC_MARK(tag)                                                        \
@@ -37,7 +38,7 @@
 // This computes 2 x 8 single precision FP operations.
 #if defined(FMA_AVX2)
 __attribute__((noinline))
-float fma_avx2(float *aval, float *bval, float *cval, float *dval, float *memval)
+float fma_avx2(float *aval, float *bval, float *cval, float *dval, void *memval)
 {
     float rval[16];
 
@@ -57,7 +58,7 @@ float fma_avx2(float *aval, float *bval, float *cval, float *dval, float *memval
 // Masked FMA computes 1/2 x 2 x 16 single precision FP operations.
 #if defined(FMA_AVX512)
 __attribute__((noinline))
-float fma_avx512(float *aval, float *bval, float *cval, float *dval, float *memval)
+float fma_avx512(float *aval, float *bval, float *cval, float *dval, void *memval)
 {
     float rval[16];
 
@@ -81,7 +82,7 @@ float fma_avx512(float *aval, float *bval, float *cval, float *dval, float *memv
 // Masked FMA4 computes 1/2 x 4 x 2 x 16 single precision FP operations.
 #if defined(FMA4)
 __attribute__((noinline))
-float fma4(float *aval, float *bval, float *cval, float *dval, float *memval)
+float fma4(float *aval, float *bval, float *cval, float *dval, void *memval)
 {
     float rval[16];
 
@@ -91,18 +92,18 @@ float fma4(float *aval, float *bval, float *cval, float *dval, float *memval)
     __m512 d = _mm512_load_ps(dval);
     __m512 src = _mm512_load_ps(aval);
 
-    __m512 e = _mm512_4fmadd_ps(src, a, b, c, d, memval);
+    __m512 e = _mm512_4fmadd_ps(src, a, b, c, d, (float *)memval);
 
     uint16_t mask16 = 0x00FF;
     __mmask32 k16 = _load_mask32(&mask16);
-    __m512 result = _mm512_maskz_4fmadd_ps(k16, d, a, b, c, d, memval);
+    __m512 result = _mm512_maskz_4fmadd_ps(k16, d, a, b, c, d, (float *)memval);
 
     _mm512_store_ps(rval, result);
     return rval[0];
 }
 #endif
 
-// Validate DP (dot product) for BF16 for single precision FP with masked and
+// Validate DP (dot product) for BF16 into single precision FP with masked and
 // unmasked execution.
 // Unmasked DPBF16 computes 2 x 2 x 16 single precision(!) FP operations.
 // Masked DPBF16 computes 1/2 x 2 x 2 x 16 single precision(!) FP operations.
@@ -111,7 +112,7 @@ float fma4(float *aval, float *bval, float *cval, float *dval, float *memval)
 // multiplication. The converts are not counted as FLOPS!
 #if defined(BF16)
 __attribute__((noinline))
-float bf16(float *aval, float *bval, float *cval, float *dval, float *memval)
+float bf16(float *aval, float *bval, float *cval, float *dval, void *memval)
 {
     float rval[16];
 
@@ -136,8 +137,71 @@ float bf16(float *aval, float *bval, float *cval, float *dval, float *memval)
     return rval[0];
 }
 #endif
-float dispatch(float (*func)(float *, float *, float *, float *, float *),
-               float *aval, float *bval, float *cval, float *dval, float *memval)
+
+// Validate tiled DP (dot product) for BF16 into single precision FP.
+// TDPBF16PS computes 2 x 2 x 4 single precision(!) FP operations.
+// Note:
+// TDPBF16PS up-converts BF16 operands to single precition FP needed for
+// multiplication. The converts are not counted as FLOPS!
+#if defined(AMX)
+__attribute__((noinline))
+float amx(float *aval, float *bval, float *cval, float *dval, void *memval)
+{
+    float rval[4];
+    unsigned char config[] = {
+        0x01, // ID
+        0x00, // start row
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // reserved
+        0x08, 0x00, // bytes per row tile 0
+        0x08, 0x00, // bytes per row tile 1
+        0x08, 0x00, // bytes per row tile 2
+        0x00, 0x00, // bytes per row tile 3
+        0x00, 0x00, // bytes per row tile 4
+        0x00, 0x00, // bytes per row tile 5
+        0x00, 0x00, // bytes per row tile 6
+        0x00, 0x00, // bytes per row tile 7
+        0x00, 0x00, // bytes per row tile 8
+        0x00, 0x00, // bytes per row tile 9
+        0x00, 0x00, // bytes per row tile 10
+        0x00, 0x00, // bytes per row tile 11
+        0x00, 0x00, // bytes per row tile 12
+        0x00, 0x00, // bytes per row tile 13
+        0x00, 0x00, // bytes per row tile 14
+        0x00, 0x00, // bytes per row tile 15
+        0x02, // rows tile 0
+        0x02, // rows tile 1
+        0x02, // rows tile 2
+        0x00, // rows tile 3
+        0x00, // rows tile 4
+        0x00, // rows tile 5
+        0x00, // rows tile 6
+        0x00, // rows tile 7
+        0x00, // rows tile 8
+        0x00, // rows tile 9
+        0x00, // rows tile 10
+        0x00, // rows tile 11
+        0x00, // rows tile 12
+        0x00, // rows tile 13
+        0x00, // rows tile 14
+        0x00 // rows tile 15
+    };
+
+    _tile_loadconfig(config);
+
+    __tile a = 0, b = 1, c = 2;
+    _tile_loadd(a, memval, 1);
+    _tile_loadd(b, memval, 1);
+    _tile_dpbf16ps(c, a, b);
+    _tile_stored(c, rval, 1);
+
+    _tile_release();
+
+    return rval[0];
+}
+#endif
+
+float dispatch(float (*func)(float *, float *, float *, float *, void *),
+               float *aval, float *bval, float *cval, float *dval, void *memval)
 {
     float ret;
     __SSC_MARK(0xFACE);
@@ -160,7 +224,7 @@ int main(int argc, char **argv)
     }
     for(int i = 0; i < 4; i++)
     {
-        memval[4] = 0.9f / (float)(i + 1);
+        memval[i] = 0.9f / (float)(i + 1);
     }
 
     float ret = 0.0, this_ret;
@@ -178,6 +242,11 @@ int main(int argc, char **argv)
 
 #if defined(BF16)
     ret += dispatch(bf16, aval, bval, cval, dval, memval);
+#endif
+
+#if defined(AMX)
+    unsigned char memval_amx[2 * 8] = {0}; // Provide a 2x8 tile
+    ret += dispatch(amx, aval, bval, cval, dval, memval_amx);
 #endif
 
     return (int)ret; // Make sure compiler does not optimize away
