@@ -1,8 +1,9 @@
 // Usage:
 // Compile with -DFMA_AVX2 to test AVX-2 FMA instructions.
 // Compile with -DFMA_AVX512 to test AVX-512 FMA instructions.
-// Compile with -DBF16 to test DPBF16 instructions.
 // Compile with -DFMA4 to test 4FMA instructions.
+// Compile with -DBF16 to test DPBF16 instructions.
+// Compile with -DAMX to test AMX instructions.
 //
 // E.g.:
 // $ icpc sde_unit_test.cpp -o sde_unit_test -O3 -DFMA_AVX512 -DBF16
