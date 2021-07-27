@@ -14,11 +14,14 @@ This project hosts the Python script `intel_sde_flops.py` to compute the number 
 * The script works for both Python 2.x and 3.x
 * Should also work on AMD processors (untested: please give feedback!)
 
-New with version 1.1 (experimental):
+New with version 1.1:
  * ~~AVX-512_4FMAPS: 4x FMA for single precision FP (Ice Lake server `-icx`)~~  
    ~~Note: Current Intel SDE (8.50) does not support this yet!~~  
    Erratum: Seems AVX-512_4FMAPS is not planned for Intel Core/Xeon processors. This was only in Intel Xeon Phi Processor (KNM: Knights Mill), which was never released to market.
  * AVX-512_BF16: bfloat16 dot product (Cooper Lake `-cpx`)
+
+New with version 1.2 (experimental):
+ * Added computation of arithmetic intensity (AI := FLOPs/Bytes accessed)
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
@@ -50,6 +53,9 @@ It uses both files created by Intel SDE and shows the FLOPs separated by single/
         Masked double prec. FLOPs: 81940800
         Instructions executed: 75126024
         FMA instructions executed: 10242600
+        Total bytes written: 92196963
+        Total bytes read: 92196963
+        Arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
     TID: 1 (OS-TID: 28770):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
@@ -57,12 +63,19 @@ It uses both files created by Intel SDE and shows the FLOPs separated by single/
         Masked double prec. FLOPs: 40960000
         Instructions executed: 37448333
         FMA instructions executed: 5120000
+        Total bytes written: 46080002
+        Total bytes read: 46080063
+        Arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
     =============================================
     Sum:
         Single prec. FLOPs: 0
         Double prec. FLOPs: 276553991
         Total instructions executed: 112574357
         Total FMA instructions executed: 15362600
+        Total bytes written: 138276965
+        Total bytes read: 138277026
+        Total arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
+
         
 In the example, the application `app` only used instructions operating on double precision floating point values. Thread 0 executed 102453126 double precision FLOPs which were unmasked, i.e. the operations (instructions) were either using scalars or the entire length of SIMD vectors/registers. Furthermore, 81940800 double precision FLOPs were computed using masked operations, which are operations on SIMD registers selecting only a subset of elements to which an individual operation is applied. Since only AVX512 has masked instructions<sup>1</sup> so far, we can also conclude that `app` was compiled for one of the AVX512 flavors. Thread 1 only executed unmasked 51200065 double precision FLOPs. The sum of all double precision FLOPs is shown at the end of the output (276553991).  
 It furthermore shows the number of overall instructions executed by thread (e.g. 75126024 for thread 0) or entirely over all threads (112574357). Also the number of explicit FMA instructions are shown the same way (e.g. 10242600 for thread 0). Note that this is only the count of the FMA instructions and not how many individual operations have been carried out. Those vary depending on how many elements are on a vector processed by an FMA instruction or whether masking was used.  
