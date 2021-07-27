@@ -191,6 +191,11 @@ If arguments are used, specify both in correct order:
 
 The files `<sde_mix_out>` and `<sde_dyn_mask_profile>` are created by Intel SDE's `-mix -iform` and `-dyn_mask_profile` options, respectively.
 
+## MPI and OpenMP
+If an MPI enabled application should be analyzied (on a shared file system), use option `-i`. This ensures that all files generated have individual file names, containing the process ID. Alternatively, option `-odir` can be used to specify separate output directories for every node/rank.
+
+For OpenMP enabled applications, consider the option `-global_region`. This option ensures that all threads are included in the analysis.
+
 # Caveats
 When using Intel SDE for counting the FLOPs, be aware of the following pecularities when using the results:
 
