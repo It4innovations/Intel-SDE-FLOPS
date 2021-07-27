@@ -156,6 +156,18 @@ def flops_mix(mix_file):
         if key in instruction_group_count:
             total_inst = instruction_group_count[key]
 
+        # Get bytes written...
+        total_written = 0
+        key = '*mem-write'
+        if key in instruction_group_count:
+            total_written = instruction_group_count[key]
+
+        # Get bytes read...
+        total_read = 0
+        key = '*mem-read'
+        if key in instruction_group_count:
+            total_read = instruction_group_count[key]
+
         # FMAs
         # Note: AVX512 FMAs are all only masked versions which will be taken
         #       care of by the function "flops_masked" properly (using
@@ -395,7 +407,7 @@ def flops_mix(mix_file):
                 total_fmas += instruction_group_count[cnt]
 
         result.append([tid, os_tid, total_single_fp, total_double_fp,
-                       total_inst, total_fmas])
+                       total_inst, total_fmas, total_written, total_read])
     # end while
     return result
 
@@ -700,6 +712,8 @@ result_dyn = flops_dyn(file_sde_dyn)
 sum_single_flops = 0
 sum_double_flops = 0
 sum_total_inst = 0
+sum_total_written = 0
+sum_total_read = 0
 sum_total_fmas = 0
 for i in range(0, len(result_mix)):
     masked_idx = -1
@@ -724,9 +738,16 @@ for i in range(0, len(result_mix)):
     sum_total_fmas += (result_mix[i][5] + result_dyn[masked_idx][3])
     print("\tFMA instructions executed: %d" % (result_mix[i][5] +
                                                result_dyn[masked_idx][3]))
-
+    sum_total_written += result_mix[i][6]
+    print("\tTotal bytes written: %d" % result_mix[i][6])
+    sum_total_read += result_mix[i][7]
+    print("\tTotal bytes read: %d" % result_mix[i][7])
+    print("\tArithmetic intensity (approx.): %f (EXPERIMENTAL)" % ((result_mix[i][2] + result_dyn[i][4] + result_dyn[masked_idx][1] + result_mix[i][3] + result_dyn[i][5] + result_dyn[masked_idx][2])/float(result_mix[i][6] + result_mix[i][7])))
 print("=============================================\nSum:")
 print("\tSingle prec. FLOPs: %d" % sum_single_flops)
 print("\tDouble prec. FLOPs: %d" % sum_double_flops)
 print("\tTotal instructions executed: %d" % sum_total_inst)
 print("\tTotal FMA instructions executed: %d" % sum_total_fmas)
+print("\tTotal bytes written: %d" % sum_total_written)
+print("\tTotal bytes read: %d" % sum_total_read)
+print("\tTotal arithmetic intensity (approx.): %f (EXPERIMENTAL)" % ((sum_single_flops + sum_double_flops)/float(sum_total_written + sum_total_read)))
