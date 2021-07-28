@@ -164,6 +164,9 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
         Masked double prec. FLOPs: 81920000
         Instructions executed: 69380000
         FMA instructions executed: 10240000
+        Total bytes written: 92196963
+        Total bytes read: 92196963
+        Arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
     TID: 1 (OS-TID: 28197):
         Unmasked single prec. FLOPs: 0
         Masked single prec. FLOPs: 0
@@ -171,12 +174,18 @@ Again, it will leave two files in the current working directory (`sde-mix-out.tx
         Masked double prec. FLOPs: 40960000
         Instructions executed: 34690000
         FMA instructions executed: 5120000
+        Total bytes written: 46080002
+        Total bytes read: 46080063
+        Arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
     =============================================
     Sum:
         Single prec. FLOPs: 0
         Double prec. FLOPs: 276480000
         Total instructions executed: 104070000
         Total FMA instructions executed: 15360000
+        Total bytes written: 138276965
+        Total bytes read: 138277026
+        Total arithmetic intensity (approx.): 1.0 (EXPERIMENTAL)
 
 In the example, one loop of the application `app` was annotated with the start/stop markers. Hence only FLOPs executed within the loop are measured.  
   
