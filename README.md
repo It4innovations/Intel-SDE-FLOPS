@@ -1,5 +1,21 @@
+
 # Computing FLOPs with Intel Software Development Emulator (Intel SDE)
 This project hosts the Python script `intel_sde_flops.py` to compute the number of Floating Point OPerations (FLOPs) executed by any application, entirely or for selected sections within the application. The script is based on the article [Calculating “FLOP” using Intel® Software Development Emulator (Intel® SDE)](https://software.intel.com/en-us/articles/calculating-flop-using-intel-software-development-emulator-intel-sde) which describes how to manually compute the FLOPs. Since it is a tedious manual task, we have automatized it by a Python script.
+
+**Table of Contents:**
+- [What You Get](#what-you-get)
+- [Getting Started](#getting-started)
+  * [FLOPs of the Entire Application](#flops-of-the-entire-application)
+  * [FLOPs of Selected Sections](#flops-of-selected-sections)
+  * [User Specified Profiling Files](#user-specified-profiling-files)
+  * [MPI and OpenMP](#mpi-and-openmp)
+- [Caveats](#caveats)
+- [Validation](#validation)
+- [TODO](#todo)
+- [Contact](#contact)
+- [Acknowledgement](#acknowledgement)
+- [License](#license)
+
 
 # What You Get
 * Compute FLOPs from either closed or known source application
