@@ -281,7 +281,7 @@ Unit test was added but Intel SDE does not yet count the single FP (or BF16) ope
 # Contact
 Should you have any feedback or questions, please contact the author: Georg Zitzlsberger (georg.zitzlsberger(a)vsb.cz).
 
-# Acknowledgements
+# Acknowledgments
 This work was supported by The Ministry of Education, Youth and Sports from the Large Infrastructures for Research, Experimental Development and Innovations project ”IT4Innovations National Supercomputing Center – LM2015070”.
 
 # License
