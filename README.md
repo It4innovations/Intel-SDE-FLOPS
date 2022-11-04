@@ -40,7 +40,7 @@ New with version 1.2 (experimental):
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-9.7.0-2022-05-09-lin.tar.xz`](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html)).  
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-9.14.0-2022-10-25-lin.tar.xz`](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html)).  
 Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
