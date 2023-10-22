@@ -40,7 +40,7 @@ New with version 1.2 (experimental):
 
 # Getting Started
 We show two examples. The frist demonstrates how to collect the FLOPs count of the entire application which can be closed source. The second shows how to control which sections of the code should be subject of counting FLOPs.  
-In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-9.14.0-2022-10-25-lin.tar.xz`](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html)).  
+In both cases the [Intel Software Development Emulator (Intel SDE)](https://software.intel.com/en-us/articles/intel-software-development-emulator) is needed. Please download the latest version and upack it (latest version as of writing is [`sde-external-9.21.1-2023-04-24-lin.tar.xz`](https://www.intel.com/content/www/us/en/download/684897/intel-software-development-emulator.html)).  
 Intel SDE is the executable `sde64` found in the top level directory within the tar ball. We assume your application of interest is `app` whose number of executed floating point operations should be counted.
 
 ## FLOPs of the Entire Application
@@ -127,7 +127,12 @@ By default, Intel SDE (`sde64`) defaults to the processor on which it is execute
      -knm    Set chip-check and CPUID for Intel(R) Knights mill CPU
      -tgl    Set chip-check and CPUID for Intel(R) Tiger Lake CPU
      -adl    Set chip-check and CPUID for Intel(R) Alder Lake CPU
+     -mtl    Set chip-check and CPUID for Intel(R) Meteor Lake CPU
+     -rpl    Set chip-check and CPUID for Intel(R) Raptor Lake CPU
      -spr    Set chip-check and CPUID for Intel(R) Sapphire Rapids CPU
+     -gnr    Set chip-check and CPUID for Intel(R) Granite Rapids CPU
+     -srf    Set chip-check and CPUID for Intel(R) Sierra Forest CPU
+     -grr    Set chip-check and CPUID for Intel(R) Grand Ridge CPU
      -future Set chip-check and CPUID for Intel(R) Future chip CPU
 
 
