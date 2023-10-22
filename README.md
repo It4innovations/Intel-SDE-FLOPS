@@ -10,7 +10,7 @@
 - [Validation](#validation)
 - [TODO](#todo)
 - [Contact](#contact)
-- [Acknowledgements](#acknowledgements)
+- [Acknowledgments](#acknowledgments)
 - [License](#license)
 
 # Computing FLOPs with Intel Software Development Emulator (Intel SDE)
